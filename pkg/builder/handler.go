@@ -5,14 +5,16 @@ import (
 )
 
 func NewHandler() (Handler, error) {
-	decoder, err := appregistry.NewManifestDecoder("./test/")
+	workingDirectory := "./manifests/"
+	decoder, err := appregistry.NewManifestDecoder(workingDirectory)
 	if err != nil {
 		return nil, err
 	}
 	return &handler{
-		downloader:   NewDownloader(),
-		imageBuilder: NewImageBuilder(),
-		manifestDecoder: *decoder,
+		downloader:       NewDownloader(),
+		imageBuilder:     NewImageBuilder(workingDirectory),
+		manifestDecoder:  *decoder,
+		workingDirectory: workingDirectory,
 	}, nil
 }
 
@@ -21,9 +23,10 @@ type Handler interface {
 }
 
 type handler struct {
-	downloader   Downloader
-	imageBuilder ImageBuilder
-	manifestDecoder appregistry.ManifestDecoder
+	downloader       Downloader
+	imageBuilder     ImageBuilder
+	manifestDecoder  appregistry.ManifestDecoder
+	workingDirectory string
 }
 
 func (h *handler) Handle(request *BuildRequest) error {
@@ -42,7 +45,6 @@ func (h *handler) Handle(request *BuildRequest) error {
 	// parse yaml for additional images
 
 	// create dockerfile pointing to the yaml
-
 	// docker build
 	h.imageBuilder.Build(request.Image)
 

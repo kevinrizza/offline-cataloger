@@ -2,12 +2,15 @@ package builder
 
 import (
 	"fmt"
-
-	"github.com/kevinrizza/offline-cataloger/pkg/apprclient"
+	"io/ioutil"
+	"os"
+	"os/exec"
 )
 
-func NewImageBuilder() ImageBuilder {
-	return &imageBuilder{}
+func NewImageBuilder(workingDirectory string) ImageBuilder {
+	return &imageBuilder{
+		dockerfilebuilder: NewDockerfileBuilder(workingDirectory),
+	}
 }
 
 type ImageBuilder interface {
@@ -15,11 +18,38 @@ type ImageBuilder interface {
 }
 
 type imageBuilder struct {
-	registryClientFactory apprclient.ClientFactory
+	dockerfilebuilder DockerfileBuilder
 }
 
 func (i *imageBuilder) Build(image string) error {
 	fmt.Println(fmt.Sprintf("Building the image %s", image))
+
+	// Generate the dockerfile
+	dockerfileText := i.dockerfilebuilder.BuildDockerfile()
+
+	dockerfile, err := ioutil.TempFile(".", "Dockerfile-")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(dockerfile.Name())
+
+	_, err = dockerfile.WriteString(dockerfileText)
+	if err != nil {
+		return err
+	}
+
+	// Create the docker command
+	var args []string
+	args = append(args, "build", "-f", dockerfile.Name(), "-t", image, ".")
+	cmd := exec.Command("docker", args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	// Exec the build
+	err = cmd.Run()
+	if err != nil {
+		return fmt.Errorf("failed to exec %#v: %v", cmd.Args, err)
+	}
 
 	return nil
 }
