@@ -75,10 +75,13 @@ func buildFunc(cmd *cobra.Command, args []string) error {
 		Endpoint:           endpoint,
 	}
 
-	buildHandler := builder.NewHandler()
+	buildHandler, err := builder.NewHandler()
+	if err != nil {
+		return err
+	}
 
 	// Build
-	err := buildHandler.Handle(request)
+	err = buildHandler.Handle(request)
 	if err != nil {
 		return err
 	}

@@ -1,10 +1,19 @@
 package builder
 
-func NewHandler() Handler {
+import (
+	"github.com/kevinrizza/offline-cataloger/pkg/appregistry"
+)
+
+func NewHandler() (Handler, error) {
+	decoder, err := appregistry.NewManifestDecoder("./test/")
+	if err != nil {
+		return nil, err
+	}
 	return &handler{
 		downloader:   NewDownloader(),
 		imageBuilder: NewImageBuilder(),
-	}
+		manifestDecoder: *decoder,
+	}, nil
 }
 
 type Handler interface {
@@ -14,15 +23,23 @@ type Handler interface {
 type handler struct {
 	downloader   Downloader
 	imageBuilder ImageBuilder
+	manifestDecoder appregistry.ManifestDecoder
 }
 
 func (h *handler) Handle(request *BuildRequest) error {
-	// download yaml
-	h.downloader.GetManifests(request)
+	// download files
+	manifests, err := h.downloader.GetManifests(request)
+	if err != nil {
+		return err
+	}
+
+	// decode binary and parse yaml
+	_, err = h.manifestDecoder.Decode(manifests)
+	if err != nil {
+		return err
+	}
 
 	// parse yaml for additional images
-
-	// push yaml to temp directory
 
 	// create dockerfile pointing to the yaml
 

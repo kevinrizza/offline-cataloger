@@ -1,8 +1,6 @@
 package builder
 
 import (
-	"fmt"
-
 	"github.com/kevinrizza/offline-cataloger/pkg/apprclient"
 )
 
@@ -13,33 +11,27 @@ func NewDownloader() Downloader {
 }
 
 type Downloader interface {
-	GetManifests(request *BuildRequest) error
+	GetManifests(request *BuildRequest) ([]*apprclient.OperatorMetadata, error)
 }
 
 type downloader struct {
 	registryClientFactory apprclient.ClientFactory
 }
 
-func (d *downloader) GetManifests(request *BuildRequest) error {
+func (d *downloader) GetManifests(request *BuildRequest) ([]*apprclient.OperatorMetadata, error) {
 	options := apprclient.Options{
 		Source: request.Endpoint,
 	}
 
 	client, err := d.registryClientFactory.New(options)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	manifests, err := client.RetrieveAll(request.Namespace)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	for _, manifest := range manifests {
-		fmt.Println(manifest.RegistryMetadata.Name)
-		//converted := string(manifest.RawYAML)
-		//fmt.Println(converted)
-	}
-
-	return nil
+	return manifests, nil
 }
