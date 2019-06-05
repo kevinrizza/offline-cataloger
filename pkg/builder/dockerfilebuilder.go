@@ -1,29 +1,46 @@
 package builder
 
-func NewDockerfileBuilder(workingDirectory string) DockerfileBuilder {
-	return &dockerfilebuilder{
-		workingDirectory: workingDirectory,
-	}
+import (
+	"bytes"
+	"text/template"
+)
+
+func NewDockerfileBuilder() DockerfileBuilder {
+	return &dockerfilebuilder{}
+}
+
+type DockerfileTemplate struct {
+	WorkingDirectory string
 }
 
 type DockerfileBuilder interface {
-	BuildDockerfile() string
+	Render(dockerfileTemplate DockerfileTemplate) (string, error)
 }
 
 type dockerfilebuilder struct {
-	workingDirectory string
 }
 
-func (d *dockerfilebuilder) BuildDockerfile() string {
-	return registryDockerfileTemplate
+func (d *dockerfilebuilder) Render(dockerfileTemplate DockerfileTemplate) (string, error) {
+	templ, err := template.New("dockerfile").Parse(registryDockerfile)
+	if err != nil {
+		return "", err
+	}
+
+	templateBuffer := &bytes.Buffer{}
+	err = templ.Execute(templateBuffer, dockerfileTemplate)
+	if err != nil {
+		return "", err
+	}
+
+	return templateBuffer.String(), nil
 }
 
-const registryDockerfileTemplate = `
+const registryDockerfile = `
 FROM python:3 as manifests
 
 RUN pip3 install operator-courier==2.1.0
 WORKDIR /usr/src
-COPY manifests /usr/src/upstream-community-operators
+COPY {{.WorkingDirectory}} /usr/src/upstream-community-operators
 RUN for file in /usr/src/upstream-community-operators/*; do operator-courier nest $file /manifests/$(basename $file); done
 
 FROM quay.io/operator-framework/upstream-registry-builder:v1.1.0 as builder

@@ -3,28 +3,21 @@ package appregistry
 import (
 	"archive/tar"
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 )
 
-func NewFlattenedProcessor(manifestsDirectory string) (*flattenedProcessor, error) {
-	if manifestsDirectory == "" {
-		return nil, errors.New("folder to store downloaded operator bundle has not been specified")
-	}
-
+func NewFlattenedProcessor() (*flattenedProcessor, error) {
 	return &flattenedProcessor{
-		parser:             &manifestYAMLParser{},
-		manifestsDirectory: manifestsDirectory,
+		parser: &manifestYAMLParser{},
 	}, nil
 }
 
 type flattenedProcessor struct {
-	parser             ManifestYAMLParser
-	count              int
-	manifestsDirectory string
+	parser ManifestYAMLParser
+	count  int
 }
 
 func (w *flattenedProcessor) GetProcessedCount() int {
@@ -36,7 +29,7 @@ func (w *flattenedProcessor) GetProcessedCount() int {
 // It expects a single file, as soon as the function encounters a file it parses
 // the raw yaml, separates it, converts it into a nested directory format,
 // and writes those nested manifests to files.
-func (w *flattenedProcessor) Process(header *tar.Header, manifestName string, reader io.Reader) (done bool, err error) {
+func (w *flattenedProcessor) Process(header *tar.Header, manifestName, workingDirectory string, reader io.Reader) (done bool, err error) {
 	if header.Typeflag != tar.TypeReg {
 		return
 	}
@@ -61,7 +54,7 @@ func (w *flattenedProcessor) Process(header *tar.Header, manifestName string, re
 	// now let's write each file to a directory
 	packageName := manifest.Packages[0].PackageName
 
-	manifestFolder := filepath.Join(w.manifestsDirectory, packageName)
+	manifestFolder := filepath.Join(workingDirectory, packageName)
 
 	err = os.MkdirAll(manifestFolder, directoryPerm)
 	if err != nil {

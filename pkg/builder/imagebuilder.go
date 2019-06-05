@@ -7,25 +7,29 @@ import (
 	"os/exec"
 )
 
-func NewImageBuilder(workingDirectory string) ImageBuilder {
+func NewImageBuilder() ImageBuilder {
 	return &imageBuilder{
-		dockerfilebuilder: NewDockerfileBuilder(workingDirectory),
+		dockerfilebuilder: NewDockerfileBuilder(),
 	}
 }
 
 type ImageBuilder interface {
-	Build(image string) error
+	Build(image, workingDirectory string) error
 }
 
 type imageBuilder struct {
 	dockerfilebuilder DockerfileBuilder
 }
 
-func (i *imageBuilder) Build(image string) error {
+func (i *imageBuilder) Build(image, workingDirectory string) error {
 	fmt.Println(fmt.Sprintf("Building the image %s", image))
 
 	// Generate the dockerfile
-	dockerfileText := i.dockerfilebuilder.BuildDockerfile()
+	template := &DockerfileTemplate{WorkingDirectory: workingDirectory}
+	dockerfileText, err := i.dockerfilebuilder.Render(*template)
+	if err != nil {
+		return err
+	}
 
 	dockerfile, err := ioutil.TempFile(".", "Dockerfile-")
 	if err != nil {

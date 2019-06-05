@@ -9,13 +9,13 @@ import (
 )
 
 // NewManifestDecoder creates a new manifestDecoder
-func NewManifestDecoder(directory string) (*ManifestDecoder, error) {
-	bundle, err := NewBundleProcessor(directory)
+func NewManifestDecoder() (*ManifestDecoder, error) {
+	bundle, err := NewBundleProcessor()
 	if err != nil {
 		return nil, err
 	}
 
-	flattened, err := NewFlattenedProcessor(directory)
+	flattened, err := NewFlattenedProcessor()
 	if err != nil {
 		return nil, err
 	}
@@ -24,7 +24,6 @@ func NewManifestDecoder(directory string) (*ManifestDecoder, error) {
 		flattened: flattened,
 		nested:    bundle,
 		walker:    &tarWalker{},
-		directory: directory,
 	}, nil
 }
 
@@ -66,7 +65,7 @@ type ManifestDecoder struct {
 // This function takes a best-effort approach. On return, err is set to an
 // aggregated list of error(s) encountered. The caller should inspect the
 // result object to determine the next steps.
-func (d *ManifestDecoder) Decode(manifests []*apprclient.OperatorMetadata) (result result, err error) {
+func (d *ManifestDecoder) Decode(manifests []*apprclient.OperatorMetadata, workingDirectory string) (result result, err error) {
 	getProcessor := func(isNested bool) (Processor, string) {
 		if isNested {
 			return d.nested, "nested"
@@ -83,7 +82,7 @@ func (d *ManifestDecoder) Decode(manifests []*apprclient.OperatorMetadata) (resu
 
 		// Determine the format type of the manifest blob and select the right processor.
 		checker := NewFormatChecker()
-		walkError := d.walker.Walk(om.Blob, om.RegistryMetadata.Name, checker)
+		walkError := d.walker.Walk(om.Blob, om.RegistryMetadata.Name, workingDirectory, checker)
 		if walkError != nil {
 			fmt.Println(fmt.Sprintf("skipping, can't determine the format of the manifest - %v", walkError))
 			allErrors = append(allErrors, err)
@@ -97,7 +96,7 @@ func (d *ManifestDecoder) Decode(manifests []*apprclient.OperatorMetadata) (resu
 		processor, format := getProcessor(checker.IsNestedBundleFormat())
 		fmt.Println(fmt.Sprintf("manifest format is - %s", format))
 
-		walkError = d.walker.Walk(om.Blob, om.RegistryMetadata.Name, processor)
+		walkError = d.walker.Walk(om.Blob, om.RegistryMetadata.Name, workingDirectory, processor)
 		if walkError != nil {
 			fmt.Println(fmt.Sprintf("skipping due to error - %v", walkError))
 			allErrors = append(allErrors, err)
