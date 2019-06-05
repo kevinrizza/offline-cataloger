@@ -16,14 +16,14 @@ func NewFlattenedProcessor(manifestsDirectory string) (*flattenedProcessor, erro
 	}
 
 	return &flattenedProcessor{
-		parser: &manifestYAMLParser{},
+		parser:             &manifestYAMLParser{},
 		manifestsDirectory: manifestsDirectory,
 	}, nil
 }
 
 type flattenedProcessor struct {
-	parser ManifestYAMLParser
-	count  int
+	parser             ManifestYAMLParser
+	count              int
 	manifestsDirectory string
 }
 
@@ -60,7 +60,7 @@ func (w *flattenedProcessor) Process(header *tar.Header, manifestName string, re
 
 	// now let's write each file to a directory
 	packageName := manifest.Packages[0].PackageName
-	
+
 	manifestFolder := filepath.Join(w.manifestsDirectory, packageName)
 
 	err = os.MkdirAll(manifestFolder, directoryPerm)
@@ -70,14 +70,7 @@ func (w *flattenedProcessor) Process(header *tar.Header, manifestName string, re
 
 	// write csvs and crds for each csv version
 	for _, csv := range manifest.ClusterServiceVersions {
-		versionFolder := filepath.Join(manifestFolder, fmt.Sprintf("%s", csv.Spec.Version))
-
-		err = os.MkdirAll(versionFolder, directoryPerm)
-		if err != nil {
-			return
-		}
-
-		csvFileName := filepath.Join(versionFolder, fmt.Sprintf("%s.clusterserviceversion.yaml", csv.Name))
+		csvFileName := filepath.Join(manifestFolder, fmt.Sprintf("%s.clusterserviceversion.yaml", csv.Name))
 		csvFile, err := w.parser.MarshalCSV(&csv)
 		if err != nil {
 			return done, err
@@ -87,19 +80,19 @@ func (w *flattenedProcessor) Process(header *tar.Header, manifestName string, re
 		if err != nil {
 			return done, err
 		}
+	}
 
-		// write crds
-		for _, crd := range manifest.CustomResourceDefinitions {
-			crdFileName := filepath.Join(versionFolder, fmt.Sprintf("%s.crd.yaml", crd.Spec.Names.Kind))
-			crdFile, err := w.parser.MarshalCRD(&crd)
-			if err != nil {
-				return done, err
-			}
+	// write crds
+	for _, crd := range manifest.CustomResourceDefinitions {
+		crdFileName := filepath.Join(manifestFolder, fmt.Sprintf("%s.crd.yaml", crd.Spec.Names.Kind))
+		crdFile, err := w.parser.MarshalCRD(&crd)
+		if err != nil {
+			return done, err
+		}
 
-			err = writeYamlToFile(crdFileName, crdFile)
-			if err != nil {
-				return done, err
-			}
+		err = writeYamlToFile(crdFileName, crdFile)
+		if err != nil {
+			return done, err
 		}
 	}
 
@@ -121,9 +114,9 @@ func (w *flattenedProcessor) Process(header *tar.Header, manifestName string, re
 
 func writeYamlToFile(filepath, content string) error {
 	fo, err := os.Create(filepath)
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 
 	defer fo.Close()
 

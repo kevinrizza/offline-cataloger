@@ -18,10 +18,16 @@ func (d *dockerfilebuilder) BuildDockerfile() string {
 	return registryDockerfileTemplate
 }
 
-const registryDockerfileTemplate = 
-`FROM quay.io/operator-framework/upstream-registry-builder as builder
+const registryDockerfileTemplate = `
+FROM python:3 as manifests
 
-COPY manifests manifests
+RUN pip3 install operator-courier==2.1.0
+WORKDIR /usr/src
+COPY manifests /usr/src/upstream-community-operators
+RUN for file in /usr/src/upstream-community-operators/*; do operator-courier nest $file /manifests/$(basename $file); done
+
+FROM quay.io/operator-framework/upstream-registry-builder:v1.1.0 as builder
+COPY --from=manifests /manifests manifests
 RUN ./bin/initializer -o ./bundles.db
 
 FROM scratch
