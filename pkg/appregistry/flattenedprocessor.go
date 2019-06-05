@@ -84,7 +84,7 @@ func (w *flattenedProcessor) Process(header *tar.Header, manifestName string, re
 
 	// write crds
 	for _, crd := range manifest.CustomResourceDefinitions {
-		crdFileName := filepath.Join(manifestFolder, fmt.Sprintf("%s.crd.yaml", crd.Spec.Names.Kind))
+		crdFileName := filepath.Join(manifestFolder, fmt.Sprintf("%s-%s.crd.yaml", crd.Spec.Names.Kind, crd.Spec.Version))
 		crdFile, err := w.parser.MarshalCRD(&crd)
 		if err != nil {
 			return done, err
