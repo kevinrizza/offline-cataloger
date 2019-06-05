@@ -46,7 +46,10 @@ func (h *handler) Handle(request *BuildRequest) error {
 
 	// create dockerfile pointing to the yaml
 	// docker build
-	h.imageBuilder.Build(request.Image)
+	err = h.imageBuilder.Build(request.Image)
+	if err != nil {
+		return err
+	}
 
 	// pull additional images to local registry
 
