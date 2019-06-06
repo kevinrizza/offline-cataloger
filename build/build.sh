@@ -13,6 +13,6 @@ BIN_DIR="$(pwd)/build/_output/bin"
 mkdir -p ${BIN_DIR}
 PROJECT_NAME="offline-cataloger"
 REPO_PATH="github.com/kevinrizza/offline-cataloger/"
-BUILD_PATH="${REPO_PATH}/cmd"
+BUILD_PATH="${REPO_PATH}/cmd/offline-cataloger/"
 echo "building "${PROJECT_NAME}"..."
 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ${BIN_DIR}/${PROJECT_NAME} $BUILD_PATH
