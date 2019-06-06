@@ -35,6 +35,10 @@ type result struct {
 	// NestedCount is the total number of nested operator manifest(s)
 	// processed so far.
 	NestedCount int
+
+	// DependentImages is a list of images required for the operator deployments
+	// to succeed
+	DependentImages []string
 }
 
 // IsEmpty returns true if no operator manifest has been processed so far.
