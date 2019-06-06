@@ -8,6 +8,7 @@ import (
 	"github.com/kevinrizza/offline-cataloger/pkg/manifestclient"
 )
 
+// NewHandler is a constructor for the Handler interface
 func NewHandler() (Handler, error) {
 	decoder, err := appregistry.NewManifestDecoder()
 	if err != nil {
@@ -20,6 +21,13 @@ func NewHandler() (Handler, error) {
 	}, nil
 }
 
+// Handler is an interface that is implemented by structs
+// that implement the Handle method. A Handler takes BuildRequests
+// as input and builds an operator-registry image from that input.
+//
+// It downloads operator manifests from a specified app registry,
+// decodes them into files and then calls docker build to generate
+// the operator-registry image.
 type Handler interface {
 	Handle(request *BuildRequest) error
 }

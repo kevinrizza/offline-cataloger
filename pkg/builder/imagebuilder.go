@@ -7,12 +7,17 @@ import (
 	"os/exec"
 )
 
+// NewImageBuilder is a constructor for the ImageBuilder interface
 func NewImageBuilder() ImageBuilder {
 	return &imageBuilder{
 		dockerfilebuilder: NewDockerfileBuilder(),
 	}
 }
 
+// ImageBuilder is an interface that is implemented by structs that
+// implement the Build method. Build takes an image name and a path
+// which contains operator manifests and builds an operator-registry
+// container image using docker build.
 type ImageBuilder interface {
 	Build(image, workingDirectory string) error
 }

@@ -5,14 +5,21 @@ import (
 	"text/template"
 )
 
+// NewDockerfileBuilder is a constructor for the DockerfileBuilder interface
 func NewDockerfileBuilder() DockerfileBuilder {
 	return &dockerfilebuilder{}
 }
 
+// DockerfileTemplate is a struct that describes the fields needed to render
+// the operator-registry dockerfile.
 type DockerfileTemplate struct {
 	WorkingDirectory string
 }
 
+// DockerfileBuilder is an interface that is implemented by structs
+// that implement the Render method. The Render method takes a DockerfileTemplate
+// and creates a custom Dockerfile that creates an operator-registry image
+// based on the template's input.
 type DockerfileBuilder interface {
 	Render(dockerfileTemplate DockerfileTemplate) (string, error)
 }
