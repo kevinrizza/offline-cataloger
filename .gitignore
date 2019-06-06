@@ -13,3 +13,6 @@
 
 # Temporary Build Files
 build/_output
+
+# Generated mock go files
+pkg/mocks

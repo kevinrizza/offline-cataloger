@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/kevinrizza/offline-cataloger/pkg/appregistry"
+	"github.com/kevinrizza/offline-cataloger/pkg/manifestclient"
 )
 
 func NewHandler() (Handler, error) {
@@ -13,9 +14,9 @@ func NewHandler() (Handler, error) {
 		return nil, err
 	}
 	return &handler{
-		downloader:      NewDownloader(),
+		downloader:      manifestclient.NewDownloader(),
 		imageBuilder:    NewImageBuilder(),
-		manifestDecoder: *decoder,
+		manifestDecoder: decoder,
 	}, nil
 }
 
@@ -24,7 +25,7 @@ type Handler interface {
 }
 
 type handler struct {
-	downloader      Downloader
+	downloader      manifestclient.Downloader
 	imageBuilder    ImageBuilder
 	manifestDecoder appregistry.ManifestDecoder
 }
@@ -38,7 +39,7 @@ func (h *handler) Handle(request *BuildRequest) error {
 	defer os.RemoveAll(workingDirectory)
 
 	// download files
-	manifests, err := h.downloader.GetManifests(request)
+	manifests, err := h.downloader.GetManifests(request.Endpoint, request.Namespace)
 	if err != nil {
 		return err
 	}

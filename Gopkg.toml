@@ -22,3 +22,7 @@
   [[prune.project]]
     name = "k8s.io/gengo"
     non-go = false
+
+[[constraint]]
+  name = "github.com/golang/mock"
+  version = "1.2.0"

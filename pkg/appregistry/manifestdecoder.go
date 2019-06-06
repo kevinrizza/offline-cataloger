@@ -9,7 +9,7 @@ import (
 )
 
 // NewManifestDecoder creates a new manifestDecoder
-func NewManifestDecoder() (*ManifestDecoder, error) {
+func NewManifestDecoder() (ManifestDecoder, error) {
 	bundle, err := NewBundleProcessor()
 	if err != nil {
 		return nil, err
@@ -20,14 +20,14 @@ func NewManifestDecoder() (*ManifestDecoder, error) {
 		return nil, err
 	}
 
-	return &ManifestDecoder{
+	return &manifestdecoder{
 		flattened: flattened,
 		nested:    bundle,
 		walker:    &tarWalker{},
 	}, nil
 }
 
-type result struct {
+type Result struct {
 	// FlattenedCount is the total number of flattened single-file operator
 	// manifest(s) processed so far.
 	FlattenedCount int
@@ -42,11 +42,15 @@ type result struct {
 }
 
 // IsEmpty returns true if no operator manifest has been processed so far.
-func (r *result) IsEmpty() bool {
+func (r *Result) IsEmpty() bool {
 	return r.FlattenedCount == 0 && r.NestedCount == 0
 }
 
-type ManifestDecoder struct {
+type ManifestDecoder interface {
+	Decode(manifests []*apprclient.OperatorMetadata, workingDirectory string) (result Result, err error)
+}
+
+type manifestdecoder struct {
 	//logger    *logrus.Entry
 	flattened *flattenedProcessor
 	nested    *bundleProcessor
@@ -69,7 +73,7 @@ type ManifestDecoder struct {
 // This function takes a best-effort approach. On return, err is set to an
 // aggregated list of error(s) encountered. The caller should inspect the
 // result object to determine the next steps.
-func (d *ManifestDecoder) Decode(manifests []*apprclient.OperatorMetadata, workingDirectory string) (result result, err error) {
+func (d *manifestdecoder) Decode(manifests []*apprclient.OperatorMetadata, workingDirectory string) (result Result, err error) {
 	getProcessor := func(isNested bool) (Processor, string) {
 		if isNested {
 			return d.nested, "nested"
