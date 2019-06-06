@@ -27,8 +27,6 @@ type imageBuilder struct {
 }
 
 func (i *imageBuilder) Build(image, workingDirectory string) error {
-	fmt.Println(fmt.Sprintf("Building the image %s", image))
-
 	// Generate the dockerfile
 	template := &DockerfileTemplate{WorkingDirectory: workingDirectory}
 	dockerfileText, err := i.dockerfilebuilder.Render(*template)

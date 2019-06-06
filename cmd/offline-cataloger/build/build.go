@@ -18,6 +18,8 @@ import (
 	"fmt"
 
 	"github.com/kevinrizza/offline-cataloger/pkg/builder"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
@@ -74,6 +76,8 @@ func buildFunc(cmd *cobra.Command, args []string) error {
 		AuthorizationToken: authToken,
 		Endpoint:           endpoint,
 	}
+
+	log.Infof("Building image %s", request.Image)
 
 	buildHandler, err := builder.NewHandler()
 	if err != nil {

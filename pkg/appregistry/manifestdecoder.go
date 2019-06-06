@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/kevinrizza/offline-cataloger/pkg/apprclient"
-	// "github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 )
 
@@ -82,17 +82,15 @@ func (d *manifestdecoder) Decode(manifests []*apprclient.OperatorMetadata, worki
 		return d.flattened, "flattened"
 	}
 
-	fmt.Println()
-
 	allErrors := []error{}
 	for _, om := range manifests {
-		fmt.Println(fmt.Sprintf("repository: %s", om.RegistryMetadata.String()))
+		log.Debug(fmt.Sprintf("repository: %s", om.RegistryMetadata.String()))
 
 		// Determine the format type of the manifest blob and select the right processor.
 		checker := NewFormatChecker()
 		walkError := d.walker.Walk(om.Blob, om.RegistryMetadata.Name, workingDirectory, checker)
 		if walkError != nil {
-			fmt.Println(fmt.Sprintf("skipping, can't determine the format of the manifest - %v", walkError))
+			log.Debug(fmt.Sprintf("skipping, can't determine the format of the manifest - %v", walkError))
 			allErrors = append(allErrors, err)
 			continue
 		}
@@ -102,16 +100,16 @@ func (d *manifestdecoder) Decode(manifests []*apprclient.OperatorMetadata, worki
 		}
 
 		processor, format := getProcessor(checker.IsNestedBundleFormat())
-		fmt.Println(fmt.Sprintf("manifest format is - %s", format))
+		log.Debug(fmt.Sprintf("manifest format is - %s", format))
 
 		walkError = d.walker.Walk(om.Blob, om.RegistryMetadata.Name, workingDirectory, processor)
 		if walkError != nil {
-			fmt.Println(fmt.Sprintf("skipping due to error - %v", walkError))
+			log.Debug(fmt.Sprintf("skipping due to error - %v", walkError))
 			allErrors = append(allErrors, err)
 			continue
 		}
 
-		fmt.Println(fmt.Sprintf("decoded successfully"))
+		log.Debug(fmt.Sprintf("decoded successfully"))
 	}
 
 	result.FlattenedCount = d.flattened.GetProcessedCount()

@@ -18,7 +18,10 @@ import (
 	"os"
 
 	"github.com/kevinrizza/offline-cataloger/cmd/offline-cataloger/build"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 func main() {
@@ -31,9 +34,20 @@ catalogs. This application defines a set of tooling to pull operators
 from hosted app-registries and make them available locally on a
 Kubernetes cluster without the need to reach out to external sources
 from the cluster.`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			if viper.GetBool("verbose") {
+				log.SetLevel(log.DebugLevel)
+				log.Debug("Debug logging is set")
+			}
+		},
 	}
 
 	root.AddCommand(build.NewCmd())
+
+	root.PersistentFlags().Bool("verbose", false, "Enable verbose logging")
+	if err := viper.BindPFlags(root.PersistentFlags()); err != nil {
+		log.Fatalf("Failed to bind root flags: %v", err)
+	}
 
 	if err := root.Execute(); err != nil {
 		os.Exit(1)

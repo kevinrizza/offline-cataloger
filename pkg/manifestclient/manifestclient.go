@@ -2,6 +2,8 @@ package manifestclient
 
 import (
 	"github.com/kevinrizza/offline-cataloger/pkg/apprclient"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // NewDownloader is a constructor for the Downloader interface
@@ -24,6 +26,8 @@ type downloader struct {
 }
 
 func (d *downloader) GetManifests(endpoint, namespace string) ([]*apprclient.OperatorMetadata, error) {
+	log.Debugf("Downloading manifests from %s at namespace %s", endpoint, namespace)
+
 	options := apprclient.Options{
 		Source: endpoint,
 	}
