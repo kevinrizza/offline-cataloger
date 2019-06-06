@@ -5,11 +5,14 @@ This project is currently in a pre-alpha state.
 
 ## Installation
 Currently, you can install the offline-cataloger by building and installing from source:
+
 `make install`
 
 ## Usage
 To build an operator-registry image:
+
 `offline-cataloger build-image quay.io/$NAMESPACE/example-registry-image:latest -n "$NAMESPACE"`
 
 For help message:
+
 `offline-cataloger -h`
