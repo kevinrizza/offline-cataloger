@@ -17,7 +17,7 @@ package main
 import (
 	"os"
 
-	"github.com/kevinrizza/offline-cataloger/cmd/build"
+	"github.com/kevinrizza/offline-cataloger/cmd/offline-cataloger/build"
 	"github.com/spf13/cobra"
 )
 
