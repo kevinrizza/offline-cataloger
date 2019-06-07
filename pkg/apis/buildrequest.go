@@ -1,4 +1,4 @@
-package builder
+package apis
 
 // BuildRequest is a struct to describe the API used by
 // the command line package to make requests to the builder

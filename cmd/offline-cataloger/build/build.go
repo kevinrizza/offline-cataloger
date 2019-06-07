@@ -17,6 +17,7 @@ package build
 import (
 	"fmt"
 
+	"github.com/kevinrizza/offline-cataloger/pkg/apis"
 	"github.com/kevinrizza/offline-cataloger/pkg/builder"
 
 	log "github.com/sirupsen/logrus"
@@ -70,7 +71,7 @@ func buildFunc(cmd *cobra.Command, args []string) error {
 	}
 
 	// Create the request to be handled by the builder
-	request := &builder.BuildRequest{
+	request := &apis.BuildRequest{
 		Image:              image,
 		Namespace:          namespace,
 		AuthorizationToken: authToken,

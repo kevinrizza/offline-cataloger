@@ -4,8 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 
+	"github.com/kevinrizza/offline-cataloger/pkg/apis"
 	"github.com/kevinrizza/offline-cataloger/pkg/appregistry"
-	"github.com/kevinrizza/offline-cataloger/pkg/manifestclient"
 )
 
 // NewHandler is a constructor for the Handler interface
@@ -15,7 +15,7 @@ func NewHandler() (Handler, error) {
 		return nil, err
 	}
 	return &handler{
-		downloader:      manifestclient.NewDownloader(),
+		downloader:      NewDownloader(),
 		imageBuilder:    NewImageBuilder(),
 		manifestDecoder: decoder,
 	}, nil
@@ -29,16 +29,16 @@ func NewHandler() (Handler, error) {
 // decodes them into files and then calls docker build to generate
 // the operator-registry image.
 type Handler interface {
-	Handle(request *BuildRequest) error
+	Handle(request *apis.BuildRequest) error
 }
 
 type handler struct {
-	downloader      manifestclient.Downloader
+	downloader      Downloader
 	imageBuilder    ImageBuilder
 	manifestDecoder appregistry.ManifestDecoder
 }
 
-func (h *handler) Handle(request *BuildRequest) error {
+func (h *handler) Handle(request *apis.BuildRequest) error {
 	// create temp directory for manifests
 	workingDirectory, err := ioutil.TempDir(".", "manifests-")
 	if err != nil {
@@ -47,7 +47,7 @@ func (h *handler) Handle(request *BuildRequest) error {
 	defer os.RemoveAll(workingDirectory)
 
 	// download files
-	manifests, err := h.downloader.GetManifests(request.Endpoint, request.Namespace)
+	manifests, err := h.downloader.GetManifests(request)
 	if err != nil {
 		return err
 	}

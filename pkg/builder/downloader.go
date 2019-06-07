@@ -1,6 +1,7 @@
-package manifestclient
+package builder
 
 import (
+	"github.com/kevinrizza/offline-cataloger/pkg/apis"
 	"github.com/kevinrizza/offline-cataloger/pkg/apprclient"
 
 	log "github.com/sirupsen/logrus"
@@ -18,18 +19,18 @@ func NewDownloader() Downloader {
 // an appregistry namespace is located, and downloads the manifests
 // at that namespace.
 type Downloader interface {
-	GetManifests(endpoint, namespace string) ([]*apprclient.OperatorMetadata, error)
+	GetManifests(request *apis.BuildRequest) ([]*apprclient.OperatorMetadata, error)
 }
 
 type downloader struct {
 	registryClientFactory apprclient.ClientFactory
 }
 
-func (d *downloader) GetManifests(endpoint, namespace string) ([]*apprclient.OperatorMetadata, error) {
-	log.Debugf("Downloading manifests from %s at namespace %s", endpoint, namespace)
+func (d *downloader) GetManifests(request *apis.BuildRequest) ([]*apprclient.OperatorMetadata, error) {
+	log.Debugf("Downloading manifests from %s at namespace %s", request.Endpoint, request.Namespace)
 
 	options := apprclient.Options{
-		Source: endpoint,
+		Source: request.Endpoint,
 	}
 
 	client, err := d.registryClientFactory.New(options)
@@ -37,7 +38,7 @@ func (d *downloader) GetManifests(endpoint, namespace string) ([]*apprclient.Ope
 		return nil, err
 	}
 
-	manifests, err := client.RetrieveAll(namespace)
+	manifests, err := client.RetrieveAll(request.Namespace)
 	if err != nil {
 		return nil, err
 	}

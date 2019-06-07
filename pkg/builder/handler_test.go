@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/golang/mock/gomock"
+	"github.com/kevinrizza/offline-cataloger/pkg/apis"
 	"github.com/kevinrizza/offline-cataloger/pkg/apprclient"
 	"github.com/kevinrizza/offline-cataloger/pkg/appregistry"
 	mocks "github.com/kevinrizza/offline-cataloger/pkg/mocks/builder_mocks"
@@ -24,14 +25,14 @@ func TestHandleNormalCase(t *testing.T) {
 		manifestDecoder: mockManifestDecoder,
 	}
 
-	request := &BuildRequest{
+	request := &apis.BuildRequest{
 		Endpoint:  "fake.io/testendpoint",
 		Namespace: "fakenamespace",
 	}
 
 	returnedManifests := make([]*apprclient.OperatorMetadata, 0)
 
-	mockDownloader.EXPECT().GetManifests(request.Endpoint, request.Namespace).Return(returnedManifests, nil)
+	mockDownloader.EXPECT().GetManifests(request).Return(returnedManifests, nil)
 
 	result := &appregistry.Result{}
 
