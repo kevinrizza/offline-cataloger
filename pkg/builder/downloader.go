@@ -30,7 +30,8 @@ func (d *downloader) GetManifests(request *apis.BuildRequest) ([]*apprclient.Ope
 	log.Debugf("Downloading manifests from %s at namespace %s", request.Endpoint, request.Namespace)
 
 	options := apprclient.Options{
-		Source: request.Endpoint,
+		Source:    request.Endpoint,
+		AuthToken: request.AuthorizationToken,
 	}
 
 	client, err := d.registryClientFactory.New(options)
