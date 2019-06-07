@@ -1,4 +1,4 @@
-package builder
+package apis
 
 import (
 	"testing"
@@ -19,7 +19,7 @@ func TestHandleNormalCase(t *testing.T) {
 	mockImageBuilder := mocks.NewImageBuilder(controller)
 	mockManifestDecoder := mocks.NewManifestDecoder(controller)
 
-	handler := &handler{
+	handler := &buildhandler{
 		downloader:      mockDownloader,
 		imageBuilder:    mockImageBuilder,
 		manifestDecoder: mockManifestDecoder,

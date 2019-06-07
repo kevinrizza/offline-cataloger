@@ -1,22 +1,34 @@
-package builder
+package apis
 
 import (
 	"io/ioutil"
 	"os"
 
-	"github.com/kevinrizza/offline-cataloger/pkg/apis"
 	"github.com/kevinrizza/offline-cataloger/pkg/appregistry"
+	"github.com/kevinrizza/offline-cataloger/pkg/builder"
+	"github.com/kevinrizza/offline-cataloger/pkg/downloader"
 )
 
+// BuildRequest is a struct to describe the API used by
+// the command line package to make requests to the builder
+// handler.
+type BuildRequest struct {
+	AuthorizationToken string
+	Endpoint           string
+	Namespace          string
+	Image              string
+	ImageBuildArgs     string
+}
+
 // NewHandler is a constructor for the Handler interface
-func NewHandler() (Handler, error) {
+func NewBuildHandler() (BuildHandler, error) {
 	decoder, err := appregistry.NewManifestDecoder()
 	if err != nil {
 		return nil, err
 	}
-	return &handler{
-		downloader:      NewDownloader(),
-		imageBuilder:    NewImageBuilder(),
+	return &buildhandler{
+		downloader:      downloader.NewDownloader(),
+		imageBuilder:    builder.NewImageBuilder(),
 		manifestDecoder: decoder,
 	}, nil
 }
@@ -28,17 +40,17 @@ func NewHandler() (Handler, error) {
 // It downloads operator manifests from a specified app registry,
 // decodes them into files and then calls docker build to generate
 // the operator-registry image.
-type Handler interface {
-	Handle(request *apis.BuildRequest) error
+type BuildHandler interface {
+	Handle(request *BuildRequest) error
 }
 
-type handler struct {
-	downloader      Downloader
-	imageBuilder    ImageBuilder
+type buildhandler struct {
+	downloader      downloader.Downloader
+	imageBuilder    builder.ImageBuilder
 	manifestDecoder appregistry.ManifestDecoder
 }
 
-func (h *handler) Handle(request *apis.BuildRequest) error {
+func (h *buildhandler) Handle(request *BuildRequest) error {
 	// Create temporary working directory for manifests
 	workingDirectory, err := ioutil.TempDir(".", "manifests-")
 	if err != nil {
@@ -47,7 +59,7 @@ func (h *handler) Handle(request *apis.BuildRequest) error {
 	defer os.RemoveAll(workingDirectory)
 
 	// Download files from App Registry
-	manifests, err := h.downloader.GetManifests(request)
+	manifests, err := h.downloader.GetManifests(request.AuthorizationToken, request.Endpoint, request.Namespace)
 	if err != nil {
 		return err
 	}

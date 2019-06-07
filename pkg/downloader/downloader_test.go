@@ -1,4 +1,4 @@
-package builder
+package downloader
 
 import (
 	"testing"

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package build
+package generate
 
 import (
 	"fmt"
@@ -24,44 +24,32 @@ import (
 )
 
 const (
-	endpointArg       = "endpoint"
-	namespaceArg      = "namespace"
-	authTokenArg      = "auth-token"
-	imageBuildArgsArg = "image-build-args"
-	defaultEndpoint   = "https://quay.io/cnr"
+	endpointArg     = "endpoint"
+	namespaceArg    = "namespace"
+	authTokenArg    = "auth-token"
+	defaultEndpoint = "https://quay.io/cnr"
 )
 
 func NewCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "build-image",
-		Short: "Builds an operator-registry image for offline use",
-		Long: `
-Builds an operator-registry image that contains the operators defined
-in the specified app registry. Publish it to local docker registry.
-Requires docker runtime to execute.`,
-		RunE: buildFunc,
+		Use:   "generate-manifests",
+		Short: "Generates manifests from appregistry namespace",
+		RunE:  generateFunc,
 	}
 
 	cmd.Flags().StringP(authTokenArg, "a", "", "Authentication Token for App Registry endpoint")
 	cmd.Flags().StringP(endpointArg, "e", "", "App Registry endpoint. Defaults to https://quay.io/cnr")
-	cmd.Flags().StringP(namespaceArg, "n", "", "Namespace in App Registry")
-	cmd.Flags().String(imageBuildArgsArg, "", "Extra image build arguments as one string such as \"--quiet --build-arg https_proxy=$https_proxy\"")
 
 	return cmd
 }
 
-func buildFunc(cmd *cobra.Command, args []string) error {
+func generateFunc(cmd *cobra.Command, args []string) error {
 	if len(args) != 1 {
 		return fmt.Errorf("command %s requires exactly one argument", cmd.CommandPath())
 	}
 
 	// Required Args
-	image := args[0]
-
-	namespace, _ := cmd.Flags().GetString(namespaceArg)
-	if namespace == "" {
-		return fmt.Errorf("Namespace not set!")
-	}
+	namespace := args[0]
 
 	// Optional Args
 	authToken, _ := cmd.Flags().GetString(authTokenArg)
@@ -71,26 +59,22 @@ func buildFunc(cmd *cobra.Command, args []string) error {
 		endpoint = defaultEndpoint
 	}
 
-	imageBuildArgs, _ := cmd.Flags().GetString(imageBuildArgsArg)
-
 	// Create the request to be handled by the builder
-	request := &apis.BuildRequest{
-		Image:              image,
+	request := &apis.GenerateManifestsRequest{
 		Namespace:          namespace,
 		AuthorizationToken: authToken,
 		Endpoint:           endpoint,
-		ImageBuildArgs:     imageBuildArgs,
 	}
 
-	log.Infof("Building image %s", request.Image)
+	log.Infof("Generating manifests from %s in namespace %s", request.Endpoint, request.Namespace)
 
-	buildHandler, err := apis.NewBuildHandler()
+	generateHandler, err := apis.NewGenerateHandler()
 	if err != nil {
 		return err
 	}
 
 	// Build
-	err = buildHandler.Handle(request)
+	err = generateHandler.Handle(request)
 	if err != nil {
 		return err
 	}

@@ -18,6 +18,7 @@ import (
 	"os"
 
 	"github.com/kevinrizza/offline-cataloger/cmd/offline-cataloger/build"
+	"github.com/kevinrizza/offline-cataloger/cmd/offline-cataloger/generate"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -43,6 +44,7 @@ from the cluster.`,
 	}
 
 	root.AddCommand(build.NewCmd())
+	root.AddCommand(generate.NewCmd())
 
 	root.PersistentFlags().Bool("verbose", false, "Enable verbose logging")
 	if err := viper.BindPFlags(root.PersistentFlags()); err != nil {
