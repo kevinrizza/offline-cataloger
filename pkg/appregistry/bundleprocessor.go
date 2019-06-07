@@ -18,14 +18,13 @@ func NewBundleProcessor() (*bundleProcessor, error) {
 }
 
 type bundleProcessor struct {
-	manifestsDirectory string
 }
 
 // Process takes an item of the tar ball and writes it to the underlying file
 // system.
 func (w *bundleProcessor) Process(header *tar.Header, manifestName, workingDirectory string, reader io.Reader) (done bool, err error) {
 
-	namedManifestDirectory := filepath.Join(w.manifestsDirectory, manifestName)
+	namedManifestDirectory := filepath.Join(workingDirectory, manifestName)
 	target := filepath.Join(namedManifestDirectory, header.Name)
 
 	if header.Typeflag == tar.TypeDir {
