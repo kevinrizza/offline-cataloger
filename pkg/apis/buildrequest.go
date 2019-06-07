@@ -8,4 +8,5 @@ type BuildRequest struct {
 	Endpoint           string
 	Namespace          string
 	Image              string
+	ImageBuildArgs     string
 }

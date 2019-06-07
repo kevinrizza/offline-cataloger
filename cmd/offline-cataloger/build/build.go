@@ -25,10 +25,11 @@ import (
 )
 
 const (
-	endpointArg     = "endpoint"
-	namespaceArg    = "namespace"
-	authTokenArg    = "auth-token"
-	defaultEndpoint = "https://quay.io/cnr"
+	endpointArg       = "endpoint"
+	namespaceArg      = "namespace"
+	authTokenArg      = "auth-token"
+	imageBuildArgsArg = "image-build-args"
+	defaultEndpoint   = "https://quay.io/cnr"
 )
 
 func NewCmd() *cobra.Command {
@@ -45,6 +46,7 @@ Requires docker runtime to execute.`,
 	cmd.Flags().StringP(authTokenArg, "a", "", "Authentication Token for App Registry endpoint")
 	cmd.Flags().StringP(endpointArg, "e", "", "App Registry endpoint. Defaults to https://quay.io/cnr")
 	cmd.Flags().StringP(namespaceArg, "n", "", "Namespace in App Registry")
+	cmd.Flags().String(imageBuildArgsArg, "", "Extra image build arguments as one string such as \"--quiet --build-arg https_proxy=$https_proxy\"")
 
 	return cmd
 }
@@ -70,12 +72,15 @@ func buildFunc(cmd *cobra.Command, args []string) error {
 		endpoint = defaultEndpoint
 	}
 
+	imageBuildArgs, _ := cmd.Flags().GetString(imageBuildArgsArg)
+
 	// Create the request to be handled by the builder
 	request := &apis.BuildRequest{
 		Image:              image,
 		Namespace:          namespace,
 		AuthorizationToken: authToken,
 		Endpoint:           endpoint,
+		ImageBuildArgs:     imageBuildArgs,
 	}
 
 	log.Infof("Building image %s", request.Image)

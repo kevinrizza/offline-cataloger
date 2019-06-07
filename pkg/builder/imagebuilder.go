@@ -5,6 +5,9 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 // NewImageBuilder is a constructor for the ImageBuilder interface
@@ -19,14 +22,14 @@ func NewImageBuilder() ImageBuilder {
 // which contains operator manifests and builds an operator-registry
 // container image using docker build.
 type ImageBuilder interface {
-	Build(image, workingDirectory string) error
+	Build(image, workingDirectory string, imageBuildArgs ...string) error
 }
 
 type imageBuilder struct {
 	dockerfilebuilder DockerfileBuilder
 }
 
-func (i *imageBuilder) Build(image, workingDirectory string) error {
+func (i *imageBuilder) Build(image, workingDirectory string, imageBuildArgs ...string) error {
 	// Generate the dockerfile
 	template := &DockerfileTemplate{WorkingDirectory: workingDirectory}
 	dockerfileText, err := i.dockerfilebuilder.Render(*template)
@@ -46,9 +49,23 @@ func (i *imageBuilder) Build(image, workingDirectory string) error {
 	}
 
 	// Create the docker command
+	dockerCmd := "docker"
+
 	var args []string
 	args = append(args, "build", "-f", dockerfile.Name(), "-t", image, ".")
-	cmd := exec.Command("docker", args...)
+
+	for _, bargs := range imageBuildArgs {
+		if bargs != "" {
+			splitArgs := strings.Fields(bargs)
+			args = append(args, splitArgs...)
+		}
+	}
+
+	log.Debugf("Build command: %s %s", dockerCmd, args)
+
+	cmd := exec.Command(dockerCmd, args...)
+
+	// Write to console
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 

@@ -59,7 +59,7 @@ func (h *handler) Handle(request *apis.BuildRequest) error {
 	}
 
 	// Build the operator-registry container
-	err = h.imageBuilder.Build(request.Image, workingDirectory)
+	err = h.imageBuilder.Build(request.Image, workingDirectory, request.ImageBuildArgs)
 	if err != nil {
 		return err
 	}
