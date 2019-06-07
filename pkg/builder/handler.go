@@ -39,35 +39,30 @@ type handler struct {
 }
 
 func (h *handler) Handle(request *apis.BuildRequest) error {
-	// create temp directory for manifests
+	// Create temporary working directory for manifests
 	workingDirectory, err := ioutil.TempDir(".", "manifests-")
 	if err != nil {
 		return err
 	}
 	defer os.RemoveAll(workingDirectory)
 
-	// download files
+	// Download files from App Registry
 	manifests, err := h.downloader.GetManifests(request)
 	if err != nil {
 		return err
 	}
 
-	// decode binary and parse yaml
+	// Decode binary and parse yaml
 	_, err = h.manifestDecoder.Decode(manifests, workingDirectory)
 	if err != nil {
 		return err
 	}
 
-	// parse yaml for additional images
-
-	// create dockerfile pointing to the yaml
-	// docker build
+	// Build the operator-registry container
 	err = h.imageBuilder.Build(request.Image, workingDirectory)
 	if err != nil {
 		return err
 	}
-
-	// pull additional images to local registry
 
 	return nil
 }
