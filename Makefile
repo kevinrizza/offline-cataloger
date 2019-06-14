@@ -39,7 +39,7 @@ generate-mocks:
 	# $(mockgen) -destination=<Path/file where the mock is generated> -package=<The package that the generated mock files will belong to> -mock_names=<Original Interface name>=<Name of Generated mocked Interface> <Go package path of the original interface> <comma seperated list of the interface you want to mock>
 
 	# builder package
-	$(mockgen) -destination=$(MOCKS_PATH)/$(BUILDER_MOCKS_PKG)/mock_downloader.go -package=$(BUILDER_MOCKS_PKG) -mock_names=Downloader=Downloader $(PKG_PATH)/builder Downloader
+	$(mockgen) -destination=$(MOCKS_PATH)/$(BUILDER_MOCKS_PKG)/mock_downloader.go -package=$(BUILDER_MOCKS_PKG) -mock_names=Downloader=Downloader $(PKG_PATH)/downloader Downloader
 	$(mockgen) -destination=$(MOCKS_PATH)/$(BUILDER_MOCKS_PKG)/mock_imagebuilder.go -package=$(BUILDER_MOCKS_PKG) -mock_names=ImageBuilder=ImageBuilder $(PKG_PATH)/builder ImageBuilder
 	$(mockgen) -destination=$(MOCKS_PATH)/$(BUILDER_MOCKS_PKG)/mock_manifestdecoder.go -package=$(BUILDER_MOCKS_PKG) -mock_names=ManifestDecoder=ManifestDecoder $(PKG_PATH)/appregistry ManifestDecoder
 	$(mockgen) -destination=$(MOCKS_PATH)/$(BUILDER_MOCKS_PKG)/mock_appregistry.go -package=$(BUILDER_MOCKS_PKG) -mock_names=ClientFactory=AppRegistryClientFactory,Client=AppRegistryClient $(PKG_PATH)/apprclient ClientFactory,Client
